@@ -11,8 +11,8 @@ import (
 )
 
 func MakePulse(led *gpio.LedDriver, d int) {
-	led.On()
-	stop:=time.AfterFunc(time.Duration(d)*time.Microsecond, func(){led.Off()})
+	led.Off()//ПЕРЕВЁРНУТАЯ НОТАЦИЯ!
+	stop:=time.AfterFunc(time.Duration(d)*time.Microsecond, func(){led.On()})
 	time.Sleep(1*time.Millisecond)
 	stop.Stop()
 }
@@ -34,7 +34,14 @@ func ledDriver(led *gpio.LedDriver ,durCh chan int){
 func main() {
 	r := raspi.NewAdaptor()
 	led := gpio.NewLedDriver(r, "12")
-
+	but := gpio.NewButtonDriver(r, "7")
+	but.Start()
+	go func(){
+		for {
+			time.Sleep(time.Duration(100)*time.Millisecond)
+			fmt.Println("but.Active",but.Active)
+		}
+	}()
 	periodCh:= make(chan int)
 
 	go ledDriver(led, periodCh)
