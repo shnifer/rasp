@@ -10,49 +10,33 @@ import (
 	"strconv"
 )
 
+func MakePulse(led *gpio.LedDriver, d int) {
+	led.On()
+	time.AfterFunc(time.Duration(d)*time.Millisecond, func(){led.Off()})
+	time.Sleep(100*time.Millisecond)
+}
+
+func ledDriver(led *gpio.LedDriver ,durCh chan int){
+	d:=<-durCh
+	fmt.Println("Set",d,"millisecond blink")
+	for{
+		select{
+			//Изменение параметра дурации
+			case d=<-durCh:
+				fmt.Println("Set",d,"millisecond blink")
+			default:
+				MakePulse(led, d)
+		}
+	}
+}
+
 func main() {
-	//d := 1000//milliseconds
 	r := raspi.NewAdaptor()
 	led := gpio.NewLedDriver(r, "12")
-/*
-	work := func() {
-		gobot.Every(2*time.Second, func() {
-			per:=time.After(1*time.Second)
-			for{
-				select{
-					case <-time.After(time.Duration(d)*time.Millisecond):
-						led.Toggle()
-					case <- per:
-						return
-				}
-			}
-		})
-	}
 
-	robot := gobot.NewRobot("blinkBot",
-		[]gobot.Connection{r},
-		[]gobot.Device{led},
-		work,
-	)
-
-	robot.Start()
-*/
 	periodCh:= make(chan int)
-	go func(ch chan int){
-		d:=<-ch
-		fmt.Println("Set",d,"millisecond blink")
-//		per:=time.After(1*time.Second)
-		for{
-			select{
-			case d=<-ch:
-				fmt.Println("Set",d,"millisecond blink")
-			case <-time.After(time.Duration(d)*time.Millisecond):
-				led.Toggle()
-//			case <- per:
-//				return
-			}
-		}
-	} (periodCh)
+
+	go ledDriver(led, periodCh)
 
 	var str string
 	for {
