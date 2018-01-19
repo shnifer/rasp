@@ -20,7 +20,7 @@ func main() {
 			per:=time.After(1*time.Second)
 			for{
 				select{
-					case <-time.After(d*time.Millisecond):
+					case <-time.After(time.Duration(d)*time.Millisecond):
 						led.Toggle()
 					case <- per:
 						return
