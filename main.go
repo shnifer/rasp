@@ -37,18 +37,22 @@ func main() {
 
 	robot.Start()
 */
-	secondtry := func(d int){
-		fmt.Println("Start with",d,"millisecond blink")
-		per:=time.After(1*time.Second)
+	periodCh:= make(chan int)
+	go func(ch chan int){
+		d:=<-ch
+		fmt.Println("Set",d,"millisecond blink")
+//		per:=time.After(1*time.Second)
 		for{
 			select{
+			case d=<-ch:
+				fmt.Println("Set",d,"millisecond blink")
 			case <-time.After(time.Duration(d)*time.Millisecond):
 				led.Toggle()
-			case <- per:
-				return
+//			case <- per:
+//				return
 			}
 		}
-	}
+	} (periodCh)
 
 	var str string
 	for {
@@ -62,7 +66,7 @@ func main() {
 			fmt.Println("try to conv")
 			v,err:=strconv.Atoi(str)
 			if err==nil {
-				secondtry(v)
+				periodCh<-v
 			} else {
 				fmt.Println("but can't")
 			}
