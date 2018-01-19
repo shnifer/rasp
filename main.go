@@ -12,8 +12,9 @@ import (
 
 func MakePulse(led *gpio.LedDriver, d int) {
 	led.On()
-	time.AfterFunc(time.Duration(d)*time.Microsecond, func(){led.Off()})
-	time.Sleep(10*time.Millisecond)
+	stop:=time.AfterFunc(time.Duration(d)*time.Microsecond, func(){led.Off()})
+	time.Sleep(1*time.Millisecond)
+	stop.Stop()
 }
 
 func ledDriver(led *gpio.LedDriver ,durCh chan int){
